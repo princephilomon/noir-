@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Noir — Staff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E13;
+    --panel:#141B22;
+    --panel-raised:#1A2530;
+    --teal:#2DD4BF;
+    --teal-deep:#1F9D8F;
+    --teal-soft:#7DD8D0;
+    --amber:#F2B84B;
+    --ink:#E8ECEF;
+    --ink-dim:#8A96A0;
+    --line: rgba(125,216,208,0.14);
+    --red:#E0746C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; min-height:100vh;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(10,14,19,0.92); backdrop-filter:blur(10px); z-index:20;}
+  header h1{font-family:'Fraunces',serif; font-weight:600; font-size:22px; margin:0; display:flex; align-items:center; gap:10px;}
+  .status-dot{width:8px; height:8px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px rgba(45,212,191,0.6);}
+  .status-dot.offline{background:var(--red); box-shadow:0 0 8px rgba(224,116,108,0.6);}
+  .conn-label{font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.06em;}
+  .header-right{display:flex; align-items:center; gap:10px;}
+  .tab-bar{display:flex; justify-content:center; gap:10px; padding:16px 24px; border-bottom:1px solid rgba(125,216,208,0.09); background:rgba(10,14,19,0.9); position:sticky; top:72px; z-index:15;}
+  .tab-btn{padding:10px 18px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--ink-dim); font-weight:700; cursor:pointer; transition:all 0.2s ease;}
+  .tab-btn.active{background:var(--teal); color:#06201C; border-color:var(--teal);}
+  main{padding:20px; max-width:1400px; margin:0 auto;}
+  .staff-view{display:none;}
+  .staff-view.active{display:block;}
+  .columns{display:grid; gap:18px;}
+  .columns.kitchen{grid-template-columns: repeat(3,1fr);}
+  .columns.floor{grid-template-columns: repeat(2,1fr);}
+  @media (max-width: 900px){ .columns.kitchen, .columns.floor{grid-template-columns:1fr;} }
+  .col-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 4px;}
+  .col-head h2{font-family:'Fraunces',serif; font-weight:600; font-size:16px; margin:0; text-transform:uppercase; letter-spacing:0.06em;}
+  .col-head .count{font-size:12px; font-weight:700; color:var(--bg); background:var(--ink-dim); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .col-placed .col-head .count{background:var(--amber); color:#06201C;}
+  .col-preparing .col-head .count{background:var(--teal); color:#06201C;}
+  .col-ready .col-head .count{background:var(--teal-soft); color:#06201C;}
+  .col-bill .col-head .count{background:var(--amber); color:#06201C;}
+  .card-stack{display:flex; flex-direction:column; gap:12px; min-height:60px;}
+  .empty-col{text-align:center; padding:30px 10px; color:#3D4A52; font-size:13px; font-style:italic; border:1px dashed var(--line); border-radius:12px;}
+  .order-card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; position:relative; overflow:hidden; animation:slideIn 0.35s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+  .order-card.placed{border-color:rgba(242,184,75,0.35);} .order-card.preparing{border-color:rgba(45,212,191,0.35);} .order-card.ready{border-color:rgba(125,216,208,0.45);} .order-card.served{border-color:rgba(242,184,75,0.35);} .order-card.paid{border-color:rgba(45,212,191,0.2);}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
+  .card-table{font-family:'Fraunces',serif; font-weight:600; font-size:19px;}
+  .card-meta{font-size:11.5px; color:var(--ink-dim); margin-top:2px;}
+  .card-timer{font-size:11px; font-weight:700; padding:4px 9px; border-radius:100px; background:rgba(255,255,255,0.06); color:var(--ink-dim); white-space:nowrap;}
+  .card-timer.warn{background:rgba(224,116,108,0.18); color:var(--red);}
+  .card-total{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--teal);}
+  .item-list{margin:10px 0;}
+  .item-row{display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--line);}
+  .item-row:last-child{border-bottom:none;}
+  .item-qty{font-weight:700; color:var(--teal); min-width:24px;}
+  .item-name{flex:1;}
+  .item-variant{display:block; font-size:11.25px; color:var(--ink-dim); font-style:italic;}
+  .card-actions{display:flex; gap:8px; margin-top:12px;}
+  .action-btn{flex:1; padding:11px; border-radius:9px; border:none; font-family:'Inter'; font-weight:700; font-size:12.5px; letter-spacing:0.02em; cursor:pointer; transition:all 0.15s ease;}
+  .action-btn.primary{background:var(--teal); color:#06201C;} .action-btn.primary:active{background:var(--teal-soft);} .action-btn.secondary{background:transparent; border:1px solid var(--line); color:var(--ink-dim);} .action-btn.secondary:active{background:rgba(255,255,255,0.04);} .action-btn.cash{background:var(--amber); color:#06201C;} .action-btn.cash:active{filter:brightness(0.9);} .paid-badge{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--teal-soft); background:rgba(45,212,191,0.1); padding:6px 12px; border-radius:100px; margin-top:4px;}
+  .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--panel-raised); border:1px solid var(--teal-deep); color:var(--ink); padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600; box-shadow:0 0 24px rgba(45,212,191,0.25); opacity:0; pointer-events:none; transition:all 0.3s ease; z-index:100;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="status-dot offline" id="conn-dot"></span> Noir Staff</h1>
+  <div class="header-right"><span class="conn-label" id="conn-label">Connecting…</span></div>
+</header>
+<div class="tab-bar">
+  <button class="tab-btn active" data-view="kitchen-view">Kitchen</button>
+  <button class="tab-btn" data-view="floor-view">Floor</button>
+</div>
+<main>
+  <section id="kitchen-view" class="staff-view active">
+    <div class="columns kitchen">
+      <div class="col-placed">
+        <div class="col-head"><h2>New Orders</h2><span class="count" id="count-placed">0</span></div>
+        <div class="card-stack" id="stack-placed"></div>
+      </div>
+      <div class="col-preparing">
+        <div class="col-head"><h2>Preparing</h2><span class="count" id="count-preparing">0</span></div>
+        <div class="card-stack" id="stack-preparing"></div>
+      </div>
+      <div class="col-ready">
+        <div class="col-head"><h2>Ready for Pickup</h2><span class="count" id="count-ready">0</span></div>
+        <div class="card-stack" id="stack-ready"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="floor-view" class="staff-view">
+    <div class="columns floor">
+      <div class="col-ready">
+        <div class="col-head"><h2>Ready to Serve</h2><span class="count" id="count-floor-ready">0</span></div>
+        <div class="card-stack" id="stack-floor-ready"></div>
+      </div>
+      <div class="col-bill">
+        <div class="col-head"><h2>Awaiting Payment</h2><span class="count" id="count-served">0</span></div>
+        <div class="card-stack" id="stack-served"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const isConfigured = SUPABASE_URL.startsWith('http');
+const sb = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const connDot = document.getElementById('conn-dot');
+const connLabel = document.getElementById('conn-label');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const staffViews = document.querySelectorAll('.staff-view');
+let orders = [];
+const STACKS = {
+  placed: document.getElementById('stack-placed'),
+  preparing: document.getElementById('stack-preparing'),
+  ready: document.getElementById('stack-ready'),
+  floorReady: document.getElementById('stack-floor-ready'),
+  served: document.getElementById('stack-served'),
+};
+const COUNTS = {
+  placed: document.getElementById('count-placed'),
+  preparing: document.getElementById('count-preparing'),
+  ready: document.getElementById('count-ready'),
+  floorReady: document.getElementById('count-floor-ready'),
+  served: document.getElementById('count-served'),
+};
+function setConnected(ok){
+  connDot.classList.toggle('offline', !ok);
+  connLabel.textContent = ok ? 'Live' : 'Offline';
+}
+function timeAgo(iso){
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 1) return 'just now';
+  return `${mins} min ago`;
+}
+function isLate(iso, threshold=12){
+  return (Date.now() - new Date(iso).getTime()) / 60000 > threshold;
+}
+function kitchenCardHtml(order){
+  const itemsHtml = order.items.map(it => `
+    <div class="item-row">
+      <span class="item-qty">${it.qty}×</span>
+      <span class="item-name">${it.name}${it.variantLabel ? `<span class="item-variant">${it.variantLabel}</span>` : ''}</span>
+    </div>
+  `).join('');
+  let actionsHtml = '';
+  if (order.status === 'placed'){
+    actionsHtml = `<button class="action-btn primary" data-action="preparing" data-id="${order.id}">Start Preparing</button>`;
+  } else if (order.status === 'preparing'){
+    actionsHtml = `
+      <button class="action-btn secondary" data-action="placed" data-id="${order.id}">Back</button>
+      <button class="action-btn primary" data-action="ready" data-id="${order.id}">Mark Ready</button>`;
+  } else if (order.status === 'ready'){
+    actionsHtml = `<button class="action-btn secondary" data-action="preparing" data-id="${order.id}">Move Back</button>`;
+  }
+  const late = isLate(order.created_at) && order.status !== 'ready';
+  return `
+    <div class="order-card ${order.status}" data-id="${order.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-table">Table ${order.table_number}</div>
+          <div class="card-meta">${order.guest_name} · #${order.order_no}</div>
+        </div>
+        <div class="card-timer ${late ? 'warn' : ''}">${timeAgo(order.created_at)}</div>
+      </div>
+      <div class="item-list">${itemsHtml}</div>
+      <div class="card-actions">${actionsHtml}</div>
+    </div>
+  `;
+}
+function floorCardHtml(order){
+  const itemsHtml = order.items.map(it => `
+    <div class="item-row"><span class="item-qty">${it.qty}×</span><span>${it.name}${it.variantLabel ? ' — '+it.variantLabel : ''}</span></div>
+  `).join('');
+  let actionsHtml = '';
+  if (order.status === 'ready'){
+    actionsHtml = `<button class="action-btn primary" data-action="served" data-id="${order.id}">Delivered to Table</button>`;
+  } else if (order.status === 'served'){
+    actionsHtml = `
+      <button class="action-btn cash" data-action="paid-cash" data-id="${order.id}">Paid — Cash</button>
+      <button class="action-btn secondary" data-action="paid-online" data-id="${order.id}">Paid — Online</button>`;
+  }
+  return `
+    <div class="order-card ${order.status}" data-id="${order.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-table">Table ${order.table_number}</div>
+          <div class="card-meta">${order.guest_name} · #${order.order_no}</div>
+        </div>
+        <div class="card-total">$${Number(order.total).toFixed(2)}</div>
+      </div>
+      <div class="item-list">${itemsHtml}</div>
+      <div class="card-actions">${actionsHtml}</div>
+    </div>
+  `;
+}
+function render(){
+  const statuses = ['placed','preparing','ready'];
+  statuses.forEach(status => {
+    const filtered = orders.filter(o => o.status === status).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    COUNTS[status].textContent = filtered.length;
+    STACKS[status].innerHTML = filtered.length ? filtered.map(kitchenCardHtml).join('') : `<div class="empty-col">No orders here</div>`;
+  });
+  const readyOrders = orders.filter(o => o.status === 'ready');
+  const servedOrders = orders.filter(o => o.status === 'served');
+  COUNTS.floorReady.textContent = readyOrders.length;
+  COUNTS.served.textContent = servedOrders.length;
+  STACKS.floorReady.innerHTML = readyOrders.length ? readyOrders.map(floorCardHtml).join('') : `<div class="empty-col">No orders here</div>`;
+  STACKS.served.innerHTML = servedOrders.length ? servedOrders.map(floorCardHtml).join('') : `<div class="empty-col">No orders here</div>`;
+  document.querySelectorAll('.action-btn[data-action]').forEach(btn => btn.onclick = () => handleAction(btn.dataset.id, btn.dataset.action));
+}
+async function loadInitial(){
+  if (!sb){ setConnected(false); connLabel.textContent = 'Demo mode — edit config.js'; orders=[]; render(); return; }
+  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: true });
+  if (error){ console.error(error); setConnected(false); return; }
+  orders = data || [];
+  render();
+  setConnected(true);
+}
+function updateLocalOrder(newOrder){
+  const idx = orders.findIndex(o => o.id === newOrder.id);
+  if (newOrder.status === 'paid'){
+    if (idx !== -1) orders.splice(idx, 1);
+    return;
+  }
+  if (idx === -1) orders.push(newOrder);
+  else orders[idx] = newOrder;
+}
+async function handleAction(id, action){
+  const order = orders.find(o => o.id === id);
+  if (!order) return;
+  let updates = {};
+  if (action === 'preparing') updates = { status: 'preparing' };
+  if (action === 'placed') updates = { status: 'placed' };
+  if (action === 'ready') updates = { status: 'ready' };
+  if (action === 'served') updates = { status: 'served' };
+  if (action === 'paid-cash') updates = { status: 'paid', payment_method: 'cash' };
+  if (action === 'paid-online') updates = { status: 'paid', payment_method: 'online' };
+  if (!Object.keys(updates).length) return;
+  Object.assign(order, updates);
+  if (updates.status === 'paid') orders = orders.filter(o => o.id !== id);
+  render();
+  if (sb){
+    const { error } = await sb.from('orders').update(updates).eq('id', id);
+    if (error) console.error('Failed to update status', error);
+  }
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2500);
+}
+function subscribeRealtime(){
+  if (!sb) return;
+  sb.channel('staff-orders')
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'orders' }, payload => {
+      updateLocalOrder(payload.new);
+      render();
+    })
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'orders' }, payload => {
+      updateLocalOrder(payload.new);
+      render();
+      if (payload.new.status === 'ready'){
+        showToast(`Order ready — Table ${payload.new.table_number}`);
+        if (navigator.vibrate) navigator.vibrate(180);
+      }
+    })
+    .subscribe(status => setConnected(status === 'SUBSCRIBED'));
+}
+function switchView(viewId){
+  staffViews.forEach(view => view.classList.toggle('active', view.id === viewId));
+  tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewId));
+}
+tabButtons.forEach(btn => btn.onclick = () => switchView(btn.dataset.view));
+loadInitial();
+subscribeRealtime();
+</script>
+</body>
+</html>
