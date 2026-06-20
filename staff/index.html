@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noir — Staff Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E13;
+    --panel:#141B22;
+    --teal:#2DD4BF;
+    --teal-deep:#1F9D8F;
+    --ink:#E8ECEF;
+    --ink-dim:#8A96A0;
+    --line: rgba(125,216,208,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+  }
+  .container{
+    text-align:center; max-width:600px; padding:40px 20px;
+  }
+  h1{
+    font-family:'Fraunces',serif; font-weight:600; font-size:48px;
+    margin-bottom:12px; color:var(--ink);
+    text-shadow: 0 0 24px rgba(45,212,191,0.18);
+  }
+  .subtitle{
+    font-family:'Fraunces',serif; font-style:italic; font-size:18px;
+    color:#7DD8D0; margin-bottom:40px;
+  }
+  .cards{
+    display:grid; grid-template-columns:1fr; gap:16px;
+  }
+  @media (min-width:600px){
+    .cards{ grid-template-columns:repeat(3,1fr); }
+  }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:28px 20px; text-decoration:none; color:inherit;
+    transition:all 0.3s ease; cursor:pointer;
+    box-shadow:0 0 0 1px rgba(45,212,191,0.08);
+  }
+  .card:hover{
+    border-color:var(--teal); box-shadow:0 0 16px rgba(45,212,191,0.4);
+    transform:translateY(-4px);
+  }
+  .card h2{
+    font-family:'Fraunces',serif; font-weight:600; font-size:24px;
+    margin-bottom:8px; color:var(--teal);
+  }
+  .card p{
+    font-size:14px; color:var(--ink-dim); line-height:1.6;
+  }
+  .rule{
+    width:60px; height:1px; background:var(--teal); margin:32px auto;
+    opacity:0.5; box-shadow:0 0 8px rgba(45,212,191,0.5);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Noir Staff</h1>
+  <div class="subtitle">Select your station</div>
+  <div class="rule"></div>
+  
+  <div class="cards">
+    <a href="staff.html" class="card">
+      <h2>⚙️</h2>
+      <h2>Combined</h2>
+      <p>Kitchen & Floor in one app</p>
+    </a>
+    <a href="kitchen.html" class="card">
+      <h2>👨‍🍳</h2>
+      <h2>Kitchen</h2>
+      <p>Track orders & prep</p>
+    </a>
+    <a href="floor.html" class="card">
+      <h2>🍽️</h2>
+      <h2>Floor</h2>
+      <p>Serve & collect payment</p>
+    </a>
+  </div>
+</div>
+</body>
+</html>
