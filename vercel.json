@@ -1,9 +1,3 @@
 {
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "public": true,
-  "rewrites": [
-    { "source": "/", "destination": "/customer.html" },
-    { "source": "/staff", "destination": "/staff/staff.html" }
-  ]
+  "version": 2
 }
