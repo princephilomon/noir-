@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Noir — Kitchen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E13;
+    --panel:#141B22;
+    --panel-raised:#1A2530;
+    --teal:#2DD4BF;
+    --teal-deep:#1F9D8F;
+    --teal-soft:#7DD8D0;
+    --amber:#F2B84B;
+    --ink:#E8ECEF;
+    --ink-dim:#8A96A0;
+    --line: rgba(125,216,208,0.14);
+    --red:#E0746C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter', sans-serif; min-height:100vh;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 24px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:rgba(10,14,19,0.92); backdrop-filter:blur(10px);
+    z-index:10;
+  }
+  header h1{
+    font-family:'Fraunces', serif; font-weight:600; font-size:22px; margin:0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .status-dot{ width:8px; height:8px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px rgba(45,212,191,0.6); }
+  .status-dot.offline{ background:var(--red); box-shadow:0 0 8px rgba(224,116,108,0.6); }
+  .conn-label{ font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.06em; }
+  .header-right{ display:flex; align-items:center; gap:10px; }
+
+  main{ padding:20px; max-width:1400px; margin:0 auto; }
+  .columns{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:18px;
+  }
+  @media (max-width: 900px){ .columns{ grid-template-columns: 1fr; } }
+
+  .col-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; padding:0 4px;
+  }
+  .col-head h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size:16px; margin:0;
+    text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .col-head .count{
+    font-size:12px; font-weight:700; color:var(--bg);
+    background:var(--ink-dim); width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .col-placed .col-head .count{ background:var(--amber); }
+  .col-preparing .col-head .count{ background:var(--teal); }
+  .col-ready .col-head .count{ background:var(--teal-soft); color:#06201C; }
+
+  .card-stack{ display:flex; flex-direction:column; gap:12px; min-height:60px; }
+  .empty-col{
+    text-align:center; padding:30px 10px; color:#3D4A52;
+    font-size:13px; font-style:italic; border:1px dashed var(--line); border-radius:12px;
+  }
+
+  .order-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:16px 18px; position:relative; overflow:hidden;
+    animation: slideIn 0.35s ease;
+  }
+  @keyframes slideIn{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:translateY(0); } }
+  .order-card.placed{ border-color:rgba(242,184,75,0.35); }
+  .order-card.preparing{ border-color:rgba(45,212,191,0.35); }
+  .order-card.ready{ border-color:rgba(125,216,208,0.45); }
+
+  .card-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .card-table{ font-family:'Fraunces', serif; font-weight:600; font-size:19px; }
+  .card-meta{ font-size:11.5px; color:var(--ink-dim); margin-top:2px; }
+  .card-timer{
+    font-size:11px; font-weight:700; padding:4px 9px; border-radius:100px;
+    background:rgba(255,255,255,0.06); color:var(--ink-dim); white-space:nowrap;
+  }
+  .card-timer.warn{ background:rgba(224,116,108,0.18); color:var(--red); }
+
+  .item-list{ margin:10px 0; }
+  .item-row{
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--line);
+  }
+  .item-row:last-child{ border-bottom:none; }
+  .item-qty{ font-weight:700; color:var(--teal); min-width:24px; }
+  .item-name{ flex:1; }
+  .item-variant{ display:block; font-size:11.5px; color:var(--ink-dim); font-style:italic; }
+
+  .card-actions{ display:flex; gap:8px; margin-top:12px; }
+  .action-btn{
+    flex:1; padding:11px; border-radius:9px; border:none;
+    font-family:'Inter'; font-weight:700; font-size:12.5px; letter-spacing:0.02em;
+    cursor:pointer; transition:all 0.15s ease;
+  }
+  .action-btn.primary{ background:var(--teal); color:#06201C; }
+  .action-btn.primary:active{ background:var(--teal-soft); }
+  .action-btn.secondary{ background:transparent; border:1px solid var(--line); color:var(--ink-dim); }
+  .action-btn.secondary:active{ background:rgba(255,255,255,0.04); }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-raised); border:1px solid var(--teal-deep); color:var(--ink);
+    padding:12px 20px; border-radius:10px; font-size:13px; font-weight:600;
+    box-shadow:0 0 24px rgba(45,212,191,0.25); opacity:0; pointer-events:none;
+    transition:all 0.3s ease; z-index:100;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="status-dot offline" id="conn-dot"></span> Noir Kitchen</h1>
+  <div class="header-right">
+    <span class="conn-label" id="conn-label">Connecting…</span>
+  </div>
+</header>
+
+<main>
+  <div class="columns">
+    <div class="col-placed">
+      <div class="col-head"><h2>New Orders</h2><span class="count" id="count-placed">0</span></div>
+      <div class="card-stack" id="stack-placed"></div>
+    </div>
+    <div class="col-preparing">
+      <div class="col-head"><h2>Preparing</h2><span class="count" id="count-preparing">0</span></div>
+      <div class="card-stack" id="stack-preparing"></div>
+    </div>
+    <div class="col-ready">
+      <div class="col-head"><h2>Ready for Pickup</h2><span class="count" id="count-ready">0</span></div>
+      <div class="card-stack" id="stack-ready"></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const isConfigured = SUPABASE_URL.startsWith('http');
+const sb = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const connDot = document.getElementById('conn-dot');
+const connLabel = document.getElementById('conn-label');
+
+function setConnected(ok){
+  connDot.classList.toggle('offline', !ok);
+  connLabel.textContent = ok ? 'Live' : 'Offline';
+}
+
+let orders = []; // local cache
+
+const STACKS = {
+  placed: document.getElementById('stack-placed'),
+  preparing: document.getElementById('stack-preparing'),
+  ready: document.getElementById('stack-ready'),
+};
+const COUNTS = {
+  placed: document.getElementById('count-placed'),
+  preparing: document.getElementById('count-preparing'),
+  ready: document.getElementById('count-ready'),
+};
+
+function timeAgo(iso){
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime())/60000));
+  if (mins < 1) return 'just now';
+  return `${mins} min ago`;
+}
+function isLate(iso, threshold=12){
+  const mins = (Date.now() - new Date(iso).getTime())/60000;
+  return mins > threshold;
+}
+
+function cardHtml(order){
+  const itemsHtml = order.items.map(it => `
+    <div class="item-row">
+      <span class="item-qty">${it.qty}×</span>
+      <span class="item-name">${it.name}${it.variantLabel ? `<span class="item-variant">${it.variantLabel}</span>` : ''}</span>
+    </div>
+  `).join('');
+
+  let actionsHtml = '';
+  if (order.status === 'placed'){
+    actionsHtml = `<button class="action-btn primary" data-action="preparing" data-id="${order.id}">Start Preparing</button>`;
+  } else if (order.status === 'preparing'){
+    actionsHtml = `
+      <button class="action-btn secondary" data-action="placed" data-id="${order.id}">Back</button>
+      <button class="action-btn primary" data-action="ready" data-id="${order.id}">Mark Ready</button>`;
+  } else if (order.status === 'ready'){
+    actionsHtml = `<button class="action-btn secondary" data-action="preparing" data-id="${order.id}">Move Back</button>`;
+  }
+
+  const late = isLate(order.created_at) && order.status !== 'ready';
+
+  return `
+    <div class="order-card ${order.status}" data-id="${order.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-table">Table ${order.table_number}</div>
+          <div class="card-meta">${order.guest_name} · #${order.order_no}</div>
+        </div>
+        <div class="card-timer ${late ? 'warn' : ''}">${timeAgo(order.created_at)}</div>
+      </div>
+      <div class="item-list">${itemsHtml}</div>
+      <div class="card-actions">${actionsHtml}</div>
+    </div>
+  `;
+}
+
+function render(){
+  ['placed','preparing','ready'].forEach(status => {
+    const filtered = orders.filter(o => o.status === status)
+      .sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+    COUNTS[status].textContent = filtered.length;
+    STACKS[status].innerHTML = filtered.length
+      ? filtered.map(cardHtml).join('')
+      : `<div class="empty-col">No orders here</div>`;
+  });
+
+  document.querySelectorAll('.action-btn[data-action]').forEach(btn => {
+    btn.onclick = () => updateStatus(btn.dataset.id, btn.dataset.action);
+  });
+}
+
+async function updateStatus(id, newStatus){
+  const order = orders.find(o => o.id === id);
+  if (order) order.status = newStatus; // optimistic update
+  render();
+  if (sb){
+    const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', id);
+    if (error) console.error('Failed to update status', error);
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2500);
+}
+
+async function loadInitial(){
+  if (!sb){ setConnected(false); connLabel.textContent = 'Demo mode — edit config.js'; return; }
+  const { data, error } = await sb.from('orders')
+    .select('*')
+    .in('status', ['placed','preparing','ready'])
+    .order('created_at', { ascending: true });
+  if (error){ console.error(error); setConnected(false); return; }
+  orders = data || [];
+  render();
+  setConnected(true);
+}
+
+function subscribeRealtime(){
+  if (!sb) return;
+  sb.channel('kitchen-orders')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+      orders.push(payload.new);
+      render();
+      showToast(`New order — Table ${payload.new.table_number}`);
+      if (navigator.vibrate) navigator.vibrate(200);
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+      const idx = orders.findIndex(o => o.id === payload.new.id);
+      if (payload.new.status === 'served' || payload.new.status === 'paid'){
+        if (idx !== -1) orders.splice(idx, 1);
+      } else if (idx !== -1){
+        orders[idx] = payload.new;
+      } else {
+        orders.push(payload.new);
+      }
+      render();
+    })
+    .subscribe(status => {
+      setConnected(status === 'SUBSCRIBED');
+    });
+}
+
+setInterval(render, 30000); // refresh "time ago" labels
+loadInitial();
+subscribeRealtime();
+</script>
+</body>
+</html>
